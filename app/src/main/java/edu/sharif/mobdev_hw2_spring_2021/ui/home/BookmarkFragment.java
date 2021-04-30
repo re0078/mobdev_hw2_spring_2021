@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.ui.notifications;
+package edu.sharif.mobdev_hw2_spring_2021.ui.home;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
 
-public class NotificationsFragment extends Fragment {
+public class BookmarkFragment extends Fragment {
 
-    private NotificationsViewModel notificationsViewModel;
+    private BookmarkViewModel bookmarkViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
-        final TextView textView = root.findViewById(R.id.text_notifications);
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        bookmarkViewModel =
+                new ViewModelProvider(this).get(BookmarkViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_bookmark, container, false);
+        final TextView textView = root.findViewById(R.id.text_bookmark);
+        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

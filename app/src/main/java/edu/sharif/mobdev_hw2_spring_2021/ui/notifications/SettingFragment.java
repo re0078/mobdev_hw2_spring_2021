@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.ui.dashboard;
+package edu.sharif.mobdev_hw2_spring_2021.ui.notifications;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
 
-public class DashboardFragment extends Fragment {
+public class SettingFragment extends Fragment {
 
-    private DashboardViewModel dashboardViewModel;
+    private SettingViewModel settingViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        dashboardViewModel =
-                new ViewModelProvider(this).get(DashboardViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        final TextView textView = root.findViewById(R.id.text_dashboard);
-        dashboardViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        settingViewModel =
+                new ViewModelProvider(this).get(SettingViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_setting, container, false);
+        final TextView textView = root.findViewById(R.id.text_setting);
+        settingViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

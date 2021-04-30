@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_bookmark">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.home.HomeFragment"
+        android:id="@+id/navigation_bookmark"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.home.BookmarkFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_bookmark" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.dashboard.DashboardFragment"
+        android:id="@+id/navigation_map"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.dashboard.MapFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_map" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.notifications.NotificationsFragment"
+        android:id="@+id/navigation_setting"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.notifications.SettingFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_setting" />
 </navigation>
