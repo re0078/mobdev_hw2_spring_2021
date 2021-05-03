@@ -19,7 +19,6 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -28,11 +27,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
-import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
+import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkAdapter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.BookmarkDialog;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
@@ -41,16 +42,25 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String SOURCE_ID = "SOURCE_ID";
+    private static final String ICON_ID = "ICON_ID";
+    private static final String LAYER_ID = "LAYER_ID";
+
     private MapboxMap mapboxMap;
     private MapView mapView;
     private SimpleSearchView simpleSearchView;
     private BookmarkRepository bookmarkRepository;
     private List<Feature> mapFeatures;
+    private BookmarkAdapter bookmarkAdapter;
+    private ModelConverter modelConverter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        bookmarkRepository = BookmarkRepository.getInstance(getBaseContext())
+        bookmarkRepository = BookmarkRepository.getInstance(getBaseContext());
+        mapFeatures = new ArrayList<>();
+        bookmarkAdapter = BookmarkAdapter.getInstance();
+        modelConverter = ModelConverter.getInstance();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
         setContentView(R.layout.activity_main);
@@ -131,10 +141,16 @@ public class MainActivity extends AppCompatActivity {
             if (destination.getId() == R.id.navigation_map) {
                 mapView.setVisibility(View.VISIBLE);
                 searchButtonView.setAlpha(1f);
-            } else {
+            }
+            else{
                 searchButtonView.setAlpha(0.2f);
                 mapView.setVisibility(View.INVISIBLE);
                 simpleSearchView.post(() -> simpleSearchView.closeSearch());
+                if (destination.getId() == R.id.navigation_bookmark) {
+                    bookmarkAdapter.getBookmarks().clear();
+                    bookmarkRepository.getBookmarks().forEach(bookmark ->
+                            bookmarkAdapter.getBookmarks().add(modelConverter.getBookmarkDTO(bookmark)));
+                }
             }
         });
 

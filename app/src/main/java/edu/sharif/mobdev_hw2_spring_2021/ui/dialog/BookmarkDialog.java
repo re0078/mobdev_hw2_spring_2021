@@ -12,10 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-
-import java.time.Duration;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
@@ -42,7 +39,7 @@ public class BookmarkDialog extends BottomSheetDialogFragment {
         Button saveButton = v.findViewById(R.id.save_button);
 
         saveButton.setOnClickListener(v1 -> {
-            EditText userInput = v.findViewById(R.id.bookmark_name);
+            EditText userInput = v.findViewById(R.id.bookmark_input_name);
             String bookmarkName = userInput.getText().toString();
             while (bookmarkRepository.existBookmark(bookmarkName)) {
                 Toast.makeText(getContext(), "A bookmark with the same name exists", Toast.LENGTH_LONG).show();

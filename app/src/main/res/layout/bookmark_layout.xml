@@ -1,77 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content" >
 
-
-
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="130dp"
-        >
+        android:layout_height="wrap_content">
 
-
-        <!--CryptoCurrency Image-->
-        <ImageView
-            android:id="@+id/bookmark_icon"
-            android:layout_width="56sp"
-            android:layout_height="56sp"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="30sp" />
-
-        <!--CryptoCurrency Initials -->
         <TextView
-            android:id="@+id/bookmark_name"
-            android:layout_width="70sp"
+            android:id="@+id/seperator_bar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/bookmark_icon"
-            android:layout_below="@+id/bookmark_icon"
-            android:layout_marginTop="10sp"
-            android:text="(BTC)"
-            android:textAlignment="center"
-            android:gravity="center_horizontal" />
+            android:text=" | "
+            android:textColor="#EF0808"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bookmark_longitude"
+            app:layout_constraintStart_toEndOf="@+id/bookmark_name"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!--Divider-->
         <TextView
-            android:id="@+id/bookmark_longitude"
-            android:layout_width="10sp"
+            android:id="@+id/geom_seperator"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="85sp"
-            android:layout_marginTop="45sp"
-            android:text="|"
-            android:textAlignment="center"
-            android:gravity="center_horizontal" />
+            android:text=" , "
+            android:textColor="#EF0B0B"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bookmark_latitude"
+            app:layout_constraintStart_toEndOf="@+id/bookmark_longitude"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!--CryptoCurrency Name-->
         <TextView
             android:id="@+id/bookmark_latitude"
-            android:layout_width="90sp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="100sp"
-            android:layout_marginTop="40sp"
-            android:text="Bitcoin"
-            android:textAlignment="center"
-            android:gravity="center_horizontal" />
+            android:hint="Lat"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bookmark_delete_icon"
+            app:layout_constraintStart_toEndOf="@+id/geom_seperator"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.517" />
+
+        <TextView
+            android:id="@+id/bookmark_longitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Long"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/geom_seperator"
+            app:layout_constraintStart_toEndOf="@+id/seperator_bar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.517" />
+
+        <TextView
+            android:id="@+id/bookmark_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Name"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/seperator_bar"
+            app:layout_constraintStart_toEndOf="@+id/bookmark_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.517" />
 
         <ImageView
             android:id="@+id/bookmark_delete_icon"
-            android:layout_width="56sp"
-            android:layout_height="56sp"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="30sp" />
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_bookmarks_list_delete_24dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.6sp"
-            android:layout_marginTop="148sp"
-            android:background="#7a253d54" />
-    </RelativeLayout>
-
-
+        <ImageView
+            android:id="@+id/bookmark_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.6"
+            app:srcCompat="@drawable/ic_bookmarks_list_24dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </RelativeLayout>
