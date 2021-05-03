@@ -25,12 +25,7 @@ public class BookmarkFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        bookmarkViewModel =
-                new ViewModelProvider(this).get(BookmarkViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_bookmark, container, false);
-        final TextView textView = root.findViewById(R.id.text_bookmark);
-        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-
-        return root;
+        bookmarkViewModel = new ViewModelProvider(this).get(BookmarkViewModel.class);
+        return inflater.inflate(R.layout.fragment_bookmark, container, false);
     }
 }
