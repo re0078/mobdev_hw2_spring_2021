@@ -4,5 +4,6 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class LocationDTO {
-    public String name, lat, longitude;
+    public String matching_text, matching_place_name;
+    public String longitude, latitude;
 }

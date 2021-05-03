@@ -36,12 +36,11 @@ public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
     public LocationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).
                 inflate(R.layout.locations_recycler_view_item, parent, false);
-        view.setOnClickListener(v -> {
-            activity.select_location(
-                    ((TextView) v.findViewById(R.id.location_name)).getText().toString(),
-                    Double.parseDouble(((TextView) v.findViewById(R.id.location_lat)).getText().toString()),
-                    Double.parseDouble(((TextView) v.findViewById(R.id.location_long)).getText().toString()));
-        });
+        view.setOnClickListener(v ->
+                activity.select_location(
+                        ((TextView) v.findViewById(R.id.location_name)).getText().toString(),
+                        Double.parseDouble(((TextView) v.findViewById(R.id.location_lat)).getText().toString()),
+                        Double.parseDouble(((TextView) v.findViewById(R.id.location_long)).getText().toString())));
         return new LocationViewHolder(view);
     }
 
@@ -49,9 +48,9 @@ public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
     public void onBindViewHolder(@NonNull LocationViewHolder holder, int position) {
         LocationDTO item = locations.get(position);
 
-        holder.location_name.setText(item.name);
-        holder.latitude.setText(item.lat);
+        holder.location_name.setText(item.matching_text);
         holder.longitude.setText(item.longitude);
+        holder.latitude.setText(item.latitude);
     }
 
     @Override

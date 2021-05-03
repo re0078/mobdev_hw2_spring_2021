@@ -8,6 +8,7 @@ import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -68,7 +69,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(@NotNull String query) {
                 Log.d("SimpleSearchView", "Submit:" + query);
-                mapboxMap.setCameraPosition(CameraPosition.DEFAULT);
+                if (!query.isEmpty()) {
+                    List<LocationDTO> locationDTOS = locationService.getSuggestions(query);
+                    locationAdaptor.setLocations(locationDTOS);
+                    locationAdaptor.notifyDataSetChanged();
+                }
                 return false;
             }
 
@@ -89,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
         simpleSearchView.setOnSearchViewListener(new SimpleSearchView.SearchViewListener() {
             @Override
             public void onSearchViewShown() {
@@ -123,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         locationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         locationAdaptor = new LocationAdaptor(this);
         locationsRecyclerView.setAdapter(locationAdaptor);
-        locationService = LocationSuggestionService.getInstance();
+        locationService = LocationSuggestionService.getInstance(getResources());
     }
 
     private void setupNavigationBar() {
@@ -157,9 +163,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void select_location(String name, double latitude, double longitude) {
+    public void select_location(String matching_name, double latitude, double longitude) {
         locationsRecyclerView.setVisibility(View.INVISIBLE);
         simpleSearchView.closeSearch();
+        CameraPosition position = new CameraPosition.Builder()
+                .target(new LatLng(latitude, longitude))
+                .zoom(10)
+                .bearing(180)
+                .tilt(30)
+                .build();
+        mapboxMap.setCameraPosition(position);
     }
 
     @Override

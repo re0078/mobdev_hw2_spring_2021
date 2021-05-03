@@ -4,4 +4,6 @@
     <string name="title_map">Map</string>
     <string name="title_settings">Settings</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzaHl6YiIsImEiOiJja280YXRzODMxMDY0MnZzNXZzZnFqMWV3In0.aPRbDJQE28RQOBtp1cYlwQ</string>
+    <string name="mapbox_download_token">pk.eyJ1IjoicmV6YTAwNzgiLCJhIjoiY2tvNDl4ZDd3MWhlNzJwcGdhOHVsMzhlMSJ9.Qg1WXz_tjj3umpqDGjV79g</string>
+    <string name="location_api_base_url">https://api.mapbox.com/geocoding/v5/mapbox.places/</string>
 </resources>
