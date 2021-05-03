@@ -4,4 +4,7 @@
     <string name="title_dashboard">Map</string>
     <string name="title_notifications">Settings</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzaHl6YiIsImEiOiJja280YXRzODMxMDY0MnZzNXZzZnFqMWV3In0.aPRbDJQE28RQOBtp1cYlwQ</string>
+    <string name="dialog_save_bookmark">U savin\' bruh?</string>
+    <string name="dialog_yes">Yeap!</string>
+    <string name="dialog_no">Nea!</string>
 </resources>

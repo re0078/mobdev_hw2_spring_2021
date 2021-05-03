@@ -12,7 +12,7 @@ public class BookmarkEntry implements BaseColumns {
             _ID + " INTEGER PRIMARY KEY," +
             MARK_NAME + " VARCHAR(16)," +
             LON_VAL + " DOUBLE," +
-            LAT_VAL + " DOUBLE," +
+            LAT_VAL + " DOUBLE" +
             ")";
     public static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
 }

@@ -49,18 +49,15 @@ public class BookmarkRepository {
         return bookmark;
     }
 
-    public void putBookmark(List<Bookmark> bookmarks) {
+    public void putBookmark(Bookmark bookmark) {
         SQLiteDatabase db = bookmarkDBHelper.getWritableDatabase();
-        bookmarks.forEach(bookmark -> db.insert(TABLE_NAME, null, saveBookmark(bookmark, false)));
-        Log.d("db-TAG", "size: " + bookmarks.size());
+        db.insert(TABLE_NAME, null, saveBookmark(bookmark, false));
     }
 
-    public void updateCoins(List<Bookmark> bookmarks) {
+    public void updateBookmark(Bookmark bookmark) {
         SQLiteDatabase db = bookmarkDBHelper.getWritableDatabase();
-        bookmarks.forEach(bookmark -> {
-            String selection = MARK_NAME + " = " + bookmark.getName();
-            db.update(TABLE_NAME, saveBookmark(bookmark, true), selection, null);
-        });
+        String selection = MARK_NAME + " = " + bookmark.getName();
+        db.update(TABLE_NAME, saveBookmark(bookmark, true), selection, null);
     }
 
     public void deleteBookmark(Bookmark bookmark) {
