@@ -1,14 +1,14 @@
-package edu.sharif.mobdev_hw2_spring_2021.ui.dashboard;
+package edu.sharif.mobdev_hw2_spring_2021.ui.bookmark;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class MapViewModel extends ViewModel {
+public class BookmarkViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public MapViewModel() {
+    public BookmarkViewModel() {
         mText = new MutableLiveData<>();
     }
 

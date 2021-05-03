@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.ui.notifications;
+package edu.sharif.mobdev_hw2_spring_2021.ui.settings;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

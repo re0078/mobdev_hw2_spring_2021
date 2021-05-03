@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.ui.home;
+package edu.sharif.mobdev_hw2_spring_2021.ui.settings;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,19 +12,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
 import edu.sharif.mobdev_hw2_spring_2021.R;
 
-public class BookmarkFragment extends Fragment {
+public class SettingFragment extends Fragment {
 
-    private BookmarkViewModel bookmarkViewModel;
+    private SettingViewModel settingViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        bookmarkViewModel =
-                new ViewModelProvider(this).get(BookmarkViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_bookmark, container, false);
-        final TextView textView = root.findViewById(R.id.text_bookmark);
-        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+
+        ((MainActivity) getActivity()).setMapViewVisibility(false);
+
+        settingViewModel =
+                new ViewModelProvider(this).get(SettingViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_setting, container, false);
+        final TextView textView = root.findViewById(R.id.text_setting);
+        settingViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_bookmark"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.home.BookmarkFragment"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_bookmark" />
 
     <fragment
         android:id="@+id/navigation_map"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.dashboard.MapFragment"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.map.MapFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/navigation_setting"
-        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.notifications.SettingFragment"
+        android:name="edu.sharif.mobdev_hw2_spring_2021.ui.settings.SettingFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_setting" />
 </navigation>

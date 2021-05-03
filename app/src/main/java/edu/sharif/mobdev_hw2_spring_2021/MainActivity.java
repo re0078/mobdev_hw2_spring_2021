@@ -1,6 +1,7 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -42,6 +43,14 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         navView.setSelectedItemId(R.id.navigation_map);
+    }
+
+    public void setMapViewVisibility(boolean visibility) {
+        if (visibility) {
+            mapView.setVisibility(View.VISIBLE);
+        } else {
+            mapView.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
