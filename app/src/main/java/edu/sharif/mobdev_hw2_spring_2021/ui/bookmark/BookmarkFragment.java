@@ -1,9 +1,11 @@
 package edu.sharif.mobdev_hw2_spring_2021.ui.bookmark;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +20,7 @@ import edu.sharif.mobdev_hw2_spring_2021.R;
 public class BookmarkFragment extends Fragment {
 
     private BookmarkViewModel bookmarkViewModel;
+    private final String TAG = "TAG-bmf";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -28,12 +31,8 @@ public class BookmarkFragment extends Fragment {
                 new ViewModelProvider(this).get(BookmarkViewModel.class);
         View root = inflater.inflate(R.layout.fragment_bookmark, container, false);
         final TextView textView = root.findViewById(R.id.text_bookmark);
-        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
         return root;
     }
 }

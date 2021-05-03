@@ -15,6 +15,7 @@ import edu.sharif.mobdev_hw2_spring_2021.R;
 public class MapFragment extends Fragment {
 
     private MapViewModel mapViewModel;
+    private final String TAG = "TAG-mf";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
