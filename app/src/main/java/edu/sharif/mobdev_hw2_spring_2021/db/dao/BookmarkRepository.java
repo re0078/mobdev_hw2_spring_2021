@@ -42,11 +42,23 @@ public class BookmarkRepository {
 
     private Bookmark readBookmark(Cursor cursor) {
         Bookmark bookmark = new Bookmark();
-        bookmark.setDbId(cursor.getLong(cursor.getColumnIndexOrThrow(_ID)));
         bookmark.setName(cursor.getString(cursor.getColumnIndexOrThrow(MARK_NAME)));
         bookmark.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow(LON_VAL)));
         bookmark.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow(LAT_VAL)));
         return bookmark;
+    }
+
+    public boolean existBookmark(String name) {
+        SQLiteDatabase db = bookmarkDBHelper.getReadableDatabase();
+        String[] columns = {_ID, MARK_NAME, LON_VAL, LAT_VAL};
+        String selection = MARK_NAME + " = '" + name + "'";
+        Cursor cursor = db.query(TABLE_NAME, columns, selection, null,
+                null, null, null, null);
+        boolean exists = false;
+        if (cursor.moveToNext())
+            exists = true;
+        cursor.close();
+        return exists;
     }
 
     public void putBookmark(Bookmark bookmark) {
@@ -58,6 +70,11 @@ public class BookmarkRepository {
         SQLiteDatabase db = bookmarkDBHelper.getWritableDatabase();
         String selection = MARK_NAME + " = " + bookmark.getName();
         db.update(TABLE_NAME, saveBookmark(bookmark, true), selection, null);
+    }
+
+    public void deleteBookmarks() {
+        SQLiteDatabase db = bookmarkDBHelper.getWritableDatabase();
+        db.delete(TABLE_NAME, null, null);
     }
 
     public void deleteBookmark(Bookmark bookmark) {

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Bookmark {
-    private Long dbId;
     private String name;
     private Double longitude;
     private Double latitude;

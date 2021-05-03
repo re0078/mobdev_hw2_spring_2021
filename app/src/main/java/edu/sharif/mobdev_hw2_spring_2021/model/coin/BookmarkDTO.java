@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor
 @Data
 public class BookmarkDTO {
-    private Long dbId;
     @NonNull
     private String name;
     @NonNull

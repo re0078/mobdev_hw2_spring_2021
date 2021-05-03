@@ -9,7 +9,7 @@ public class BookmarkEntry implements BaseColumns {
     public static final String LAT_VAL = "latitude";
     public static final String SQL_CREATE_ENTRIES = "CREATE TABLE " + TABLE_NAME +
             "(" +
-            _ID + " INTEGER PRIMARY KEY," +
+            _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
             MARK_NAME + " VARCHAR(16)," +
             LON_VAL + " DOUBLE," +
             LAT_VAL + " DOUBLE" +

@@ -24,7 +24,6 @@ public class ModelConverter {
 
     public BookmarkDTO getBookmarkDTO(Bookmark bookmark) {
         BookmarkDTO bookmarkDTO = new BookmarkDTO();
-        bookmarkDTO.setDbId(bookmark.getDbId());
         bookmarkDTO.setName(bookmark.getName());
         bookmarkDTO.setLongitude(String.valueOf(bookmark.getLongitude()));
         bookmarkDTO.setLatitude(String.valueOf(bookmark.getLatitude()));

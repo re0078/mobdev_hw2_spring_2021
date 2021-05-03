@@ -1,16 +1,16 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
-import android.content.DialogInterface;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -19,7 +19,6 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -27,12 +26,10 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
-import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
-import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.BookmarkDialog;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
@@ -51,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bookmarkRepository = BookmarkRepository.getInstance(getBaseContext());
-
+        //bookmarkRepository.deleteBookmarks();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
         setContentView(R.layout.activity_main);
@@ -118,22 +115,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapboxMap.addOnMapClickListener(point -> {
             mapFeatures.clear();
             mapFeatures.add(Feature.fromGeometry(Point.fromLngLat(point.getLongitude(), point.getLatitude())));
-            bookmarkRepository.putBookmark(new Bookmark(1L, "bm_1", point.getLongitude(), point.getLatitude()));
             updateStyle(mapboxMap);
+            BookmarkDialog bookmarkDialog = new BookmarkDialog();
+            bookmarkDialog.setBookmarkPoint(point);
+            bookmarkDialog.show(getSupportFragmentManager(), "BookmarkDialog");
             return true;
         });
-
         updateStyle(mapboxMap);
-
-
-/*
-        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                Point.fromLngLat(-57.225365, -33.213144)));
-        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                Point.fromLngLat(-54.14164, -33.981818)));
-        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                Point.fromLngLat(-56.990533, -30.583266)));
-*/
     }
 
     private void updateStyle(MapboxMap mapboxMap) {
