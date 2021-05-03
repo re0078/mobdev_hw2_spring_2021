@@ -2,14 +2,15 @@ package edu.sharif.mobdev_hw2_spring_2021;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,10 +21,12 @@ import androidx.navigation.ui.NavigationUI;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
+    private MapboxMap mapboxMap;
     private MapView mapView;
     private SimpleSearchView simpleSearchView;
 
@@ -40,25 +43,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupMapView(Bundle savedInstanceState) {
-
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(mapboxMap -> mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
-            // Map is set up and the style has loaded. Now you can add data or make other map adjustments
-        }));
+        mapView.getMapAsync(mapboxMap -> {
+            MainActivity.this.mapboxMap = mapboxMap;
+            mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
+                // Map is set up and the style has loaded. Now you can add data or make other map adjustments
+            });
+        });
     }
 
     private void setupSearchView() {
         simpleSearchView = findViewById(R.id.searchView);
         simpleSearchView.setOnQueryTextListener(new SimpleSearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
+            public boolean onQueryTextSubmit(@NotNull String query) {
                 Log.d("SimpleSearchView", "Submit:" + query);
+                mapboxMap.setCameraPosition(CameraPosition.DEFAULT);
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(@NotNull String newText) {
                 Log.d("SimpleSearchView", "Text changed:" + newText);
                 return false;
             }
