@@ -25,8 +25,6 @@ public class BookmarkFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        ((MainActivity) getActivity()).setMapViewVisibility(false);
-
         bookmarkViewModel =
                 new ViewModelProvider(this).get(BookmarkViewModel.class);
         View root = inflater.inflate(R.layout.fragment_bookmark, container, false);
