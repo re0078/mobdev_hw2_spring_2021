@@ -1,18 +1,25 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -21,18 +28,29 @@ import androidx.navigation.ui.NavigationUI;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
+
+import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
+import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
+import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.BookmarkDialog;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
 public class MainActivity extends AppCompatActivity {
 
     private MapboxMap mapboxMap;
     private MapView mapView;
     private SimpleSearchView simpleSearchView;
+    private BookmarkRepository bookmarkRepository;
+    private List<Feature> mapFeatures;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        bookmarkRepository = BookmarkRepository.getInstance(getBaseContext())
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
         setContentView(R.layout.activity_main);
@@ -41,14 +59,37 @@ public class MainActivity extends AppCompatActivity {
         setupNavigationBar();
     }
 
+    private void updateStyle(MapboxMap mapboxMap) {
+        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41")
+                .withImage(ICON_ID, BitmapFactory.decodeResource(
+                        getResources(), R.drawable.mapbox_marker_icon_default))
+                .withSource(new GeoJsonSource(SOURCE_ID,
+                        FeatureCollection.fromFeatures(mapFeatures)))
+                .withLayer(new SymbolLayer(LAYER_ID, SOURCE_ID)
+                        .withProperties(
+                                iconImage(ICON_ID),
+                                iconAllowOverlap(true),
+                                iconIgnorePlacement(true)
+                        )
+                ), style -> {
+        });
+    }
+
     private void setupMapView(Bundle savedInstanceState) {
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(mapboxMap -> {
             MainActivity.this.mapboxMap = mapboxMap;
-            mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
-                // Map is set up and the style has loaded. Now you can add data or make other map adjustments
+            mapboxMap.addOnMapClickListener(point -> {
+                mapFeatures.clear();
+                mapFeatures.add(Feature.fromGeometry(Point.fromLngLat(point.getLongitude(), point.getLatitude())));
+                updateStyle(mapboxMap);
+                BookmarkDialog bookmarkDialog = new BookmarkDialog();
+                bookmarkDialog.setBookmarkPoint(point);
+                bookmarkDialog.show(getSupportFragmentManager(), "BookmarkDialog");
+                return true;
             });
+            updateStyle(mapboxMap);
         });
     }
 
