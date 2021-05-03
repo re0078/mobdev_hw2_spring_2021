@@ -10,7 +10,6 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,17 +17,26 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Objects;
 
+import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
+import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
+import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
+
 public class MainActivity extends AppCompatActivity {
 
     private MapboxMap mapboxMap;
     private MapView mapView;
     private SimpleSearchView simpleSearchView;
+    private RecyclerView locationsRecyclerView;
+    private LocationAdaptor locationAdaptor;
+    private LocationSuggestionService locationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setupMapView(savedInstanceState);
         setupSearchView();
+        setupSuggestionView();
         setupNavigationBar();
     }
 
@@ -66,6 +75,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(@NotNull String newText) {
                 Log.d("SimpleSearchView", "Text changed:" + newText);
+                if (!newText.isEmpty()) {
+                    List<LocationDTO> locationDTOS = locationService.getSuggestions(newText);
+                    locationAdaptor.setLocations(locationDTOS);
+                    locationAdaptor.notifyDataSetChanged();
+                }
                 return false;
             }
 
@@ -75,7 +89,41 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        simpleSearchView.setOnSearchViewListener(new SimpleSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                Log.d("SimpleSearchView", "onSearchViewShown");
+                locationsRecyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                Log.d("SimpleSearchView", "onSearchViewClosed");
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onSearchViewShownAnimation() {
+                Log.d("SimpleSearchView", "onSearchViewShownAnimation");
+                locationsRecyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSearchViewClosedAnimation() {
+                Log.d("SimpleSearchView", "onSearchViewClosedAnimation");
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
+            }
+        });
         simpleSearchView.post(() -> simpleSearchView.showSearch());
+    }
+
+    private void setupSuggestionView() {
+        locationsRecyclerView = findViewById(R.id.location_list);
+        locationsRecyclerView.setVisibility(View.INVISIBLE);
+        locationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        locationAdaptor = new LocationAdaptor(this);
+        locationsRecyclerView.setAdapter(locationAdaptor);
+        locationService = LocationSuggestionService.getInstance();
     }
 
     private void setupNavigationBar() {
@@ -94,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 searchButtonView.setAlpha(0.2f);
                 mapView.setVisibility(View.INVISIBLE);
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
                 simpleSearchView.post(() -> simpleSearchView.closeSearch());
             }
         });
@@ -106,6 +155,11 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
                 simpleSearchView.post(() -> simpleSearchView.showSearch());
         });
+    }
+
+    public void select_location(String name, double latitude, double longitude) {
+        locationsRecyclerView.setVisibility(View.INVISIBLE);
+        simpleSearchView.closeSearch();
     }
 
     @Override
