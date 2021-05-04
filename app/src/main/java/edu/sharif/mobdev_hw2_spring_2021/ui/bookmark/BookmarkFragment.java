@@ -17,16 +17,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Objects;
 
 import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
 import edu.sharif.mobdev_hw2_spring_2021.R;
 import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import lombok.Getter;
 
 public class BookmarkFragment extends Fragment {
 
     private BookmarkViewModel bookmarkViewModel;
     private RecyclerView recyclerView;
     private final String TAG = "TAG-bmf";
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -36,7 +39,11 @@ public class BookmarkFragment extends Fragment {
         recyclerView = root.findViewById(R.id.bookmark_list);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(root.getContext()));
-        recyclerView.setAdapter(BookmarkAdapter.getInstance());
+        recyclerView.setAdapter(BookmarkAdapter.getInstance(getChildFragmentManager()));
+        final TextView textView = root.findViewById(R.id.text_setting);
+        bookmarkViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        if (Objects.requireNonNull(recyclerView.getAdapter()).getItemCount() != 0)
+            textView.setVisibility(View.INVISIBLE);
         return root;
     }
 

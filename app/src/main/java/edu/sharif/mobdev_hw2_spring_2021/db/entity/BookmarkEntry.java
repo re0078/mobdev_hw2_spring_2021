@@ -10,7 +10,7 @@ public class BookmarkEntry implements BaseColumns {
     public static final String SQL_CREATE_ENTRIES = "CREATE TABLE " + TABLE_NAME +
             "(" +
             _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-            MARK_NAME + " VARCHAR(16)," +
+            MARK_NAME + " VARCHAR(32) UNIQUE," +
             LON_VAL + " DOUBLE," +
             LAT_VAL + " DOUBLE" +
             ")";

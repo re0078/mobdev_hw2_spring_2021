@@ -20,7 +20,7 @@ import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
 import lombok.Setter;
 
 @Setter
-public class BookmarkDialog extends BottomSheetDialogFragment {
+public class SaveBookmarkDialog extends BottomSheetDialogFragment {
     private static BookmarkRepository bookmarkRepository;
     private LatLng bookmarkPoint;
 
@@ -33,11 +33,9 @@ public class BookmarkDialog extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.bottom_sheet_layout,
+        View v = inflater.inflate(R.layout.bookmark_save_layout,
                 container, false);
-
         Button saveButton = v.findViewById(R.id.save_button);
-
         saveButton.setOnClickListener(v1 -> {
             EditText userInput = v.findViewById(R.id.bookmark_input_name);
             String bookmarkName = userInput.getText().toString();
@@ -46,6 +44,7 @@ public class BookmarkDialog extends BottomSheetDialogFragment {
             } else {
                 bookmarkRepository.putBookmark(new Bookmark(bookmarkName,
                         bookmarkPoint.getLongitude(), bookmarkPoint.getLatitude()));
+                Toast.makeText(getContext(), "Bookmark saved", Toast.LENGTH_SHORT).show();
                 dismiss();
             }
         });
