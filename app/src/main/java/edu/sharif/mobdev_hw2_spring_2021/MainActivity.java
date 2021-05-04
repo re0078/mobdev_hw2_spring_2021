@@ -240,18 +240,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        searchButtonView.setOnClickListener(l -> {
+            if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
+                simpleSearchView.post(() -> simpleSearchView.showSearch());
+        });
+
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         navView.setSelectedItemId(R.id.navigation_map);
         if (flag_id) {
             navView.setSelectedItemId(R.id.navigation_setting);
         }
-    }
-
-        searchButtonView.setOnClickListener(l -> {
-            if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
-                simpleSearchView.post(() -> simpleSearchView.showSearch());
-        });
     }
 
     public void selectLocation(String matchingName, double latitude, double longitude) {
