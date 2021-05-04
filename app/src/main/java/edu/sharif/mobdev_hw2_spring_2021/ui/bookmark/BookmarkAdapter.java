@@ -1,36 +1,31 @@
 package edu.sharif.mobdev_hw2_spring_2021.ui.bookmark;
 
 import android.app.Activity;
-import android.util.Log;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.jetbrains.annotations.NotNull;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mapbox.geojson.Point;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
 import edu.sharif.mobdev_hw2_spring_2021.R;
-import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
 import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
 import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.DeleteBookmarkDialog;
-import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -40,18 +35,18 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
     @NonNull
     private final List<BookmarkDTO> bookmarks;
     private FragmentManager fragmentManager;
-    private RecyclerView recyclerView;
-    private Activity activity;
+    private static ModelConverter modelConverter;
+    private Activity bookmarkActivity;
 
 
-    public static BookmarkAdapter getInstance(RecyclerView recyclerView, Activity activity, FragmentManager fragmentManager) {
+    public static BookmarkAdapter getInstance(Activity activity, FragmentManager fragmentManager) {
+        BOOKMARK_ADAPTER.bookmarkActivity = activity;
         BOOKMARK_ADAPTER.fragmentManager = fragmentManager;
-        BOOKMARK_ADAPTER.recyclerView = recyclerView;
-        BOOKMARK_ADAPTER.activity = activity;
-        return BOOKMARK_ADAPTER;
+        return getInstance();
     }
 
     public static BookmarkAdapter getInstance() {
+        modelConverter = ModelConverter.getInstance();
         return BOOKMARK_ADAPTER;
     }
 
@@ -65,13 +60,16 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull BookmarkViewHolder holder, int position) {
-        BookmarkDTO bookmark = bookmarks.get(position);
+        BookmarkDTO bookmarkDTO = bookmarks.get(position);
         holder.getBookmarkIcon().setImageResource(R.drawable.ic_bookmarks_list_24dp);
-        holder.getBookmarkName().setText(bookmark.getName());
-        holder.getLongitude().setText(bookmark.getLongitude());
-        holder.getLatitude().setText(bookmark.getLatitude());
+        holder.getBookmarkName().setText(bookmarkDTO.getName());
+        holder.getLongitude().setText(bookmarkDTO.getLongitude());
+        holder.getLatitude().setText(bookmarkDTO.getLatitude());
+        Bookmark bookmark = modelConverter.getBookmarkEntity(bookmarkDTO);
+        holder.getBookmarkIcon().setOnClickListener(v ->
+                showBookmarkOnMap(Point.fromLngLat(bookmark.getLongitude(), bookmark.getLatitude())));
         holder.getDeleteIcon().setImageResource(R.drawable.ic_bookmarks_list_delete_24dp);
-        holder.getDeleteIcon().setOnClickListener(v -> deleteBookmarkWithDialog(bookmark.getName()));
+        holder.getDeleteIcon().setOnClickListener(v -> deleteBookmarkWithDialog(bookmarkDTO.getName()));
     }
 
     private void deleteBookmarkWithDialog(String bookmarkName) {
@@ -79,31 +77,10 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
         deleteBookmarkDialog.show(fragmentManager, "BookmarkDeletionDialog");
     }
 
-    private void setUpScrolling() {
-        AtomicBoolean loading = new AtomicBoolean(true);
-        AtomicInteger pastVisibleItems = new AtomicInteger(0);
-        AtomicInteger visibleItemCount = new AtomicInteger(0);
-        AtomicInteger totalItemCount = new AtomicInteger(0);
-        LinearLayoutManager layoutManager;
-        layoutManager = new LinearLayoutManager(activity);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NotNull RecyclerView recyclerView, int dx, int dy) {
-                if (dy > 0) {
-                    visibleItemCount.set(layoutManager.getChildCount());
-                    totalItemCount.set(layoutManager.getItemCount());
-                    pastVisibleItems.set(layoutManager.findFirstVisibleItemPosition());
-
-                    if (loading.get()) {
-                        if ((visibleItemCount.get() + pastVisibleItems.get()) >= totalItemCount.get()) {
-                            loading.set(false);
-                            loading.set(true);
-                        }
-                    }
-                }
-            }
-        });
+    private void showBookmarkOnMap(Point point){
+        ((MainActivity) bookmarkActivity).setMapPoints(point);
+        BottomNavigationView navView = bookmarkActivity.findViewById(R.id.nav_view);
+        navView.setSelectedItemId(R.id.navigation_map);
     }
 
     @Override

@@ -39,7 +39,7 @@ public class BookmarkFragment extends Fragment {
         recyclerView = root.findViewById(R.id.bookmark_list);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(root.getContext()));
-        adapter = BookmarkAdapter.getInstance(recyclerView, getActivity(), getChildFragmentManager());
+        adapter = BookmarkAdapter.getInstance(getActivity(), getChildFragmentManager());
         recyclerView.setAdapter(adapter);
         final TextView textView = root.findViewById(R.id.text_bookmark);
         final EditText editText = root.findViewById(R.id.bookmark_search_bar);
