@@ -2,18 +2,15 @@ package edu.sharif.mobdev_hw2_spring_2021.ui.settings;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
@@ -43,31 +40,39 @@ public class SettingFragment extends Fragment {
             switchTheme.setChecked(true);
         }
 
-        switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            //   switchDark(getView(), isChecked);
+        setUpSwitchListener(switchTheme);
+
+        builder = new AlertDialog.Builder(root.getContext());
+        Button deleteButton = root.findViewById(R.id.cache_button);
+        setUpDeleteListener(deleteButton, builder);
+
+        return root;
+    }
+
+    private void setUpSwitchListener(SwitchCompat switchCompat) {
+        switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                // switchDark(getView(), isChecked);
-                // getResources().getColor(R.color.colorPrimary);
                 flag = 1;
                 ((MainActivity) getActivity()).ToggleTheme(true);
-
-                Log.d("turn_on", "amin");
+                Toast.makeText(getContext(), "Light Attracts Bugs :)", Toast.LENGTH_SHORT).show();
             } else {
                 flag = 0;
                 ((MainActivity) getActivity()).ToggleTheme(false);
-                Log.d("turn_off", "ali");
+                Toast.makeText(getContext(), "Ah SHIT, Here We Go Again!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        builder = new AlertDialog.Builder(root.getContext());
-        Button delete_button = root.findViewById(R.id.cache_button);
-        delete_button.setOnClickListener(v -> {
+    private void setUpDeleteListener(Button deleteButton, AlertDialog.Builder builder) {
+        deleteButton.setOnClickListener(v -> {
             builder
                     .setMessage(R.string.dialog_message)
                     .setTitle(R.string.dialog_title)
                     .setCancelable(true)
                     .setPositiveButton("DELETE", (dialog, which) -> {
                         bookmarkRepository.deleteBookmarks();
+                        dialog.cancel();
+                        Toast.makeText(getContext(), "All Bookmarks deleted", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("CANCEL", (dialog, which) -> {
                         dialog.cancel();
@@ -75,8 +80,5 @@ public class SettingFragment extends Fragment {
             AlertDialog alert = builder.create();
             alert.show();
         });
-
-
-        return root;
     }
 }
