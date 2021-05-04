@@ -20,6 +20,7 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -48,6 +49,11 @@ import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
 import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.Style;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String SOURCE_ID = "SOURCE_ID";
@@ -56,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MapboxMap mapboxMap;
     private MapView mapView;
+    private static boolean flag_id;
     private SimpleSearchView simpleSearchView;
     private RecyclerView locationsRecyclerView;
     private LocationAdaptor locationAdaptor;
@@ -236,6 +243,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         navView.setSelectedItemId(R.id.navigation_map);
+        if (flag_id) {
+            navView.setSelectedItemId(R.id.navigation_setting);
+        }
+    }
 
         searchButtonView.setOnClickListener(l -> {
             if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
@@ -255,6 +266,17 @@ public class MainActivity extends AppCompatActivity {
                         mapboxMap.setCameraPosition(position);
 */
         setMapPoints(Point.fromLngLat(longitude, latitude));
+    }
+
+    public void ToggleTheme(boolean isChecked){
+        flag_id = true;
+        if (isChecked) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+        recreate();
     }
 
     @Override
