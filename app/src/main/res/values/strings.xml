@@ -7,4 +7,7 @@
     <string name="dialog_save_bookmark">U savin\' bruh?</string>
     <string name="dialog_yes">Yeap!</string>
     <string name="dialog_no">Nea!</string>
+    <string name="save_location_alert">Save location</string>
+    <string name="yes">Yeap!</string>
+    <string name="bookmark_name_hint">Bookmark name</string>
 </resources>

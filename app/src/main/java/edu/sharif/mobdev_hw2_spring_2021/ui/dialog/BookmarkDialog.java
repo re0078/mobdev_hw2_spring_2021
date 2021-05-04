@@ -41,12 +41,13 @@ public class BookmarkDialog extends BottomSheetDialogFragment {
         saveButton.setOnClickListener(v1 -> {
             EditText userInput = v.findViewById(R.id.bookmark_input_name);
             String bookmarkName = userInput.getText().toString();
-            while (bookmarkRepository.existBookmark(bookmarkName)) {
-                Toast.makeText(getContext(), "A bookmark with the same name exists", Toast.LENGTH_LONG).show();
+            if (bookmarkRepository.existBookmark(bookmarkName)) {
+                Toast.makeText(getContext(), "A bookmark with the same name exists", Toast.LENGTH_SHORT).show();
+            } else {
+                bookmarkRepository.putBookmark(new Bookmark(bookmarkName,
+                        bookmarkPoint.getLongitude(), bookmarkPoint.getLatitude()));
+                dismiss();
             }
-            bookmarkRepository.putBookmark(new Bookmark(bookmarkName,
-                    bookmarkPoint.getLongitude(), bookmarkPoint.getLatitude()));
-            dismiss();
         });
         return v;
     }
