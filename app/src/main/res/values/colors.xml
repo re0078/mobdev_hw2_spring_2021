@@ -15,4 +15,15 @@
     <color name="blue_1">#00101f</color>
     <color name="blue_5">#0078ff</color>
 
+
+    <color name="daynight_textcolor">#0044cc</color>
+    <color name="switchColor">#911DEE</color>
+
+    <color name="colorGrey">#D3D3D3</color>
+    <color name="colorTransparent">#FFFFFF</color>
+    <color name="colorLearned">#32CD32</color>
+    <!-- app/src/main/res/values/colors.xml -->
+    <color name="darkColorPrimary">#1e2756</color>
+    <color name="darkColorPrimaryDark">#141831</color>
+    <color name="darkColorAccent">#2aac4b</color>
 </resources>

@@ -3,20 +3,22 @@ package edu.sharif.mobdev_hw2_spring_2021;
 import android.os.Bundle;
 import android.view.View;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.Style;
-
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.Style;
+
 public class MainActivity extends AppCompatActivity {
 
     private MapView mapView;
+    private static boolean flag_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         navView.setSelectedItemId(R.id.navigation_map);
+        if (flag_id) {
+            navView.setSelectedItemId(R.id.navigation_setting);
+        }
     }
 
     public void setMapViewVisibility(boolean visibility) {
@@ -51,6 +56,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             mapView.setVisibility(View.INVISIBLE);
         }
+    }
+
+    public void ToggleTheme(boolean isChecked){
+        flag_id = true;
+        if (isChecked) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+        recreate();
     }
 
     @Override
