@@ -77,9 +77,9 @@ public class BookmarkRepository {
         db.delete(TABLE_NAME, null, null);
     }
 
-    public void deleteBookmark(Bookmark bookmark) {
+    public void deleteBookmark(String bookmarkName) {
         SQLiteDatabase db = bookmarkDBHelper.getWritableDatabase();
-        String selection = MARK_NAME + " = " + bookmark.getName();
+        String selection = MARK_NAME + " = '" + bookmarkName + "'";
         db.delete(TABLE_NAME, selection, null);
     }
 

@@ -15,41 +15,36 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
-            android:id="@+id/save_location_text"
+            android:id="@+id/delete_bookmark_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/save_location_alert"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toTopOf="@+id/bookmark_input_name"
+            android:text="@string/bookmark_deletion_alert"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.082"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-            android:id="@+id/bookmark_input_name"
-            android:layout_width="213dp"
-            android:layout_height="56dp"
-            android:autofillHints="Bookmark name"
-            android:hint="@string/bookmark_name_hint"
-            android:inputType="textPersonName"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/save_button"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/save_location_text"
-            app:layout_constraintVertical_bias="1.0" />
-
         <Button
-            android:id="@+id/save_button"
+            android:id="@+id/delete_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_marginBottom="16dp"
             android:text="@string/yes"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/bookmark_input_name" />
+            app:layout_constraintStart_toEndOf="@+id/cancel_deletion_button"
+            app:layout_constraintTop_toBottomOf="@+id/delete_bookmark_text" />
+
+        <Button
+            android:id="@+id/cancel_deletion_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/no"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/delete_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/delete_bookmark_text" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

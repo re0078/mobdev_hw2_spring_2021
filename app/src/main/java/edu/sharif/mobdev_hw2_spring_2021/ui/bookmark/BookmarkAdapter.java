@@ -7,28 +7,42 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
 import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
 import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.DeleteBookmarkDialog;
+import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
     private static final BookmarkAdapter BOOKMARK_ADAPTER = new BookmarkAdapter(new ArrayList<>());
-    private List<BookmarkDTO> bookmarks;
+    @NonNull
+    private final List<BookmarkDTO> bookmarks;
+    private FragmentManager fragmentManager;
+
+    public static BookmarkAdapter getInstance(FragmentManager fragmentManager) {
+        BOOKMARK_ADAPTER.fragmentManager = fragmentManager;
+        return BOOKMARK_ADAPTER;
+    }
 
     public static BookmarkAdapter getInstance() {
         return BOOKMARK_ADAPTER;
     }
+
     @NonNull
     @Override
     public BookmarkViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,6 +59,12 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
         holder.getLongitude().setText(bookmark.getLongitude());
         holder.getLatitude().setText(bookmark.getLatitude());
         holder.getDeleteIcon().setImageResource(R.drawable.ic_bookmarks_list_delete_24dp);
+        holder.getDeleteIcon().setOnClickListener(v -> deleteBookmarkWithDialog(bookmark.getName()));
+    }
+
+    private void deleteBookmarkWithDialog(String bookmarkName) {
+        DeleteBookmarkDialog deleteBookmarkDialog = new DeleteBookmarkDialog(this, bookmarkName);
+        deleteBookmarkDialog.show(fragmentManager, "BookmarkDeletionDialog");
     }
 
     @Override
