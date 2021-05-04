@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
 import edu.sharif.mobdev_hw2_spring_2021.R;
+import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
 
 public class SettingFragment extends Fragment {
 
@@ -26,6 +27,7 @@ public class SettingFragment extends Fragment {
     private SwitchCompat switchCompat;
     private static int flag;
     private AlertDialog.Builder builder;
+    private static BookmarkRepository bookmarkRepository;
 
 
 
@@ -34,6 +36,7 @@ public class SettingFragment extends Fragment {
 
         settingViewModel =
                 new ViewModelProvider(this).get(SettingViewModel.class);
+        bookmarkRepository = BookmarkRepository.getInstance(getContext());
         View root = inflater.inflate(R.layout.fragment_setting, container, false);
         SwitchCompat switchTheme = root.findViewById(R.id.switchTheme);
         if (flag == 1) {
@@ -64,7 +67,7 @@ public class SettingFragment extends Fragment {
                     .setTitle(R.string.dialog_title)
                     .setCancelable(true)
                     .setPositiveButton("DELETE", (dialog, which) -> {
-
+                        bookmarkRepository.deleteBookmarks();
                     })
                     .setNegativeButton("CANCEL", (dialog, which) -> {
                         dialog.cancel();
