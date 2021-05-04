@@ -17,11 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
-import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
-import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
 import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
 
 public class BookmarkFragment extends Fragment {
@@ -47,6 +44,8 @@ public class BookmarkFragment extends Fragment {
         bookmarkViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         if (adapter.getItemCount() != 0)
             textView.setVisibility(View.INVISIBLE);
+        else
+            editText.setVisibility(View.INVISIBLE);
         return root;
     }
 

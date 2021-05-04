@@ -24,4 +24,5 @@
     <string name="dialog_message">Are you sure you want to delete saved data?</string>
     <string name="dialog_title">Delete Alert</string>
     <string name="delete_data_button_text">Delete Data</string>
+    <string name="dark_mode_switch">Dark Mode</string>
 </resources>
