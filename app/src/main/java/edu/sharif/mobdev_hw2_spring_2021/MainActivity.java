@@ -1,17 +1,23 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -23,8 +29,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalDouble;
+
+import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
+import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkAdapter;
+import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
 import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
@@ -32,17 +50,28 @@ import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String SOURCE_ID = "SOURCE_ID";
+    private static final String ICON_ID = "ICON_ID";
+    private static final String LAYER_ID = "LAYER_ID";
+
     private MapboxMap mapboxMap;
     private MapView mapView;
     private SimpleSearchView simpleSearchView;
     private RecyclerView locationsRecyclerView;
     private LocationAdaptor locationAdaptor;
     private LocationSuggestionService locationService;
+    private BookmarkRepository bookmarkRepository;
+    private List<Feature> mapFeatures;
+    private BookmarkAdapter bookmarkAdapter;
+    private ModelConverter modelConverter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        bookmarkRepository = BookmarkRepository.getInstance(getBaseContext());
+        mapFeatures = new ArrayList<>();
+        bookmarkAdapter = BookmarkAdapter.getInstance();
+        modelConverter = ModelConverter.getInstance();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
         setContentView(R.layout.activity_main);
@@ -52,14 +81,60 @@ public class MainActivity extends AppCompatActivity {
         setupNavigationBar();
     }
 
+    private void updateStyle(MapboxMap mapboxMap) {
+        mapboxMap.setStyle(new Style.Builder().fromUri(getResources().getString(R.string.style_uri))
+                .withImage(ICON_ID, BitmapFactory.decodeResource(
+                        getResources(), R.drawable.mapbox_marker_icon_default))
+                .withSource(new GeoJsonSource(SOURCE_ID,
+                        FeatureCollection.fromFeatures(mapFeatures)))
+                .withLayer(new SymbolLayer(LAYER_ID, SOURCE_ID)
+                        .withProperties(
+                                iconImage(ICON_ID),
+                                iconAllowOverlap(true),
+                                iconIgnorePlacement(true)
+                        )
+                ), style -> {
+        });
+    }
+
+    public void setMapPoints(Point... points) {
+        mapFeatures.clear();
+        OptionalDouble averageLng = Arrays.stream(points).mapToDouble(Point::longitude).average();
+        OptionalDouble averageLat = Arrays.stream(points).mapToDouble(Point::latitude).average();
+        for (Point point : points) {
+            mapFeatures.add(Feature.fromGeometry(Point.fromLngLat(point.longitude(), point.latitude())));
+        }
+        CameraPosition position;
+        if (!averageLat.isPresent() || !averageLng.isPresent())
+            position = CameraPosition.DEFAULT;
+        else {
+            position = new CameraPosition.Builder()
+                    .target(new LatLng(averageLat.getAsDouble(), averageLng.getAsDouble()))
+                    .zoom(10)
+                    .tilt(30)
+                    .build();
+        }
+        mapboxMap.setCameraPosition(position);
+        updateStyle(mapboxMap);
+    }
+
     private void setupMapView(Bundle savedInstanceState) {
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
+        mapViewAsyncAttitude();
+    }
+
+    private void mapViewAsyncAttitude() {
         mapView.getMapAsync(mapboxMap -> {
             MainActivity.this.mapboxMap = mapboxMap;
-            mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
-                // Map is set up and the style has loaded. Now you can add data or make other map adjustments
+            mapboxMap.addOnMapClickListener(point -> {
+                setMapPoints(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
+                SaveBookmarkDialog saveBookmarkDialog = new SaveBookmarkDialog();
+                saveBookmarkDialog.setBookmarkPoint(point);
+                saveBookmarkDialog.show(getSupportFragmentManager(), "BookmarkDialog");
+                return true;
             });
+            setMapPoints();
         });
     }
 
@@ -150,6 +225,11 @@ public class MainActivity extends AppCompatActivity {
                 mapView.setVisibility(View.INVISIBLE);
                 locationsRecyclerView.setVisibility(View.INVISIBLE);
                 simpleSearchView.post(() -> simpleSearchView.closeSearch());
+                if (destination.getId() == R.id.navigation_bookmark) {
+                    bookmarkAdapter.getBookmarks().clear();
+                    bookmarkRepository.getBookmarks().forEach(bookmark ->
+                            bookmarkAdapter.getBookmarks().add(modelConverter.getBookmarkDTO(bookmark)));
+                }
             }
         });
 

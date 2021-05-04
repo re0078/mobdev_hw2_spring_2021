@@ -6,4 +6,19 @@
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzaHl6YiIsImEiOiJja280YXRzODMxMDY0MnZzNXZzZnFqMWV3In0.aPRbDJQE28RQOBtp1cYlwQ</string>
     <string name="mapbox_download_token">pk.eyJ1IjoicmV6YTAwNzgiLCJhIjoiY2tvNDl4ZDd3MWhlNzJwcGdhOHVsMzhlMSJ9.Qg1WXz_tjj3umpqDGjV79g</string>
     <string name="location_api_base_url">https://api.mapbox.com/geocoding/v5/mapbox.places/</string>
+    <string name="dialog_save_bookmark">U savin\' bruh?</string>
+    <string name="dialog_yes">Yeap!</string>
+    <string name="dialog_no">Nea!</string>
+    <string name="save_location_alert">Save location</string>
+    <string name="yes">Yeap!</string>
+    <string name="no">NEAH!</string>
+    <string name="bookmark_deletion_alert">Are you sure you want to delete this bookmark?</string>
+    <string name="settings_text">Settings</string>
+    <string name="empty_bookmark_text">You haven\'t bookmarked any place!</string>
+    <string name="not_comma">,</string>
+    <string name="not_lat">Lat</string>
+    <string name="not_long">Long</string>
+    <string name="search_bookmarks_hint">Search bookmarks</string>
+    <string name="bookmark_name_hint">Bookmark name</string>
+    <string name="style_uri">mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41</string>
 </resources>
