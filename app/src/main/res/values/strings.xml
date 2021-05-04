@@ -4,4 +4,6 @@
     <string name="title_dashboard">Map</string>
     <string name="title_notifications">Settings</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzaHl6YiIsImEiOiJja280YXRzODMxMDY0MnZzNXZzZnFqMWV3In0.aPRbDJQE28RQOBtp1cYlwQ</string>
+    <string name="dialog_message">Are you sure you want to delete saved data?</string>
+    <string name="dialog_title">Delete Alert</string>
 </resources>
