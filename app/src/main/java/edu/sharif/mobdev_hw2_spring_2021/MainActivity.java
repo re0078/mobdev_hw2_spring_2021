@@ -243,16 +243,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void select_location(String matching_name, double latitude, double longitude) {
+    public void selectLocation(String matchingName, double latitude, double longitude) {
         locationsRecyclerView.setVisibility(View.INVISIBLE);
         simpleSearchView.closeSearch();
+/*
         CameraPosition position = new CameraPosition.Builder()
                 .target(new LatLng(latitude, longitude))
                 .zoom(10)
-                .bearing(180)
                 .tilt(30)
                 .build();
-        mapboxMap.setCameraPosition(position);
+                        mapboxMap.setCameraPosition(position);
+*/
+        setMapPoints(Point.fromLngLat(longitude, latitude));
     }
 
     @Override

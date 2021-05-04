@@ -37,7 +37,7 @@ public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
         View view = LayoutInflater.from(parent.getContext()).
                 inflate(R.layout.locations_recycler_view_item, parent, false);
         view.setOnClickListener(v ->
-                activity.select_location(
+                activity.selectLocation(
                         ((TextView) v.findViewById(R.id.location_name)).getText().toString(),
                         Double.parseDouble(((TextView) v.findViewById(R.id.location_lat)).getText().toString()),
                         Double.parseDouble(((TextView) v.findViewById(R.id.location_long)).getText().toString())));
