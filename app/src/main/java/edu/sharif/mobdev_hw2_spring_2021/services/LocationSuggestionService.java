@@ -23,7 +23,15 @@ public class LocationSuggestionService {
     }
 
     public List<LocationDTO> getSuggestions(String searchText) {
+        String[] words = searchText.split("\\s");
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String word : words) {
+            stringBuilder.append(word.substring(0, 1).toUpperCase())
+                    .append(word.substring(1))
+                    .append(" ");
+        }
         if (searchText.isEmpty()) return Collections.emptyList();
-        return client.searchLocation(searchText);
+        List<LocationDTO> locationDTOS = client.searchLocation(stringBuilder.toString());
+        return locationDTOS;
     }
 }

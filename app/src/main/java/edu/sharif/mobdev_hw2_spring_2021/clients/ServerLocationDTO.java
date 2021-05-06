@@ -18,9 +18,11 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class ServerLocationDTO {
-    @JsonProperty("matching_text")
+//    @JsonProperty("matching_text")
+    @JsonProperty("text")
     private String matching_text;
-    @JsonProperty("matching_place_name")
+//    @JsonProperty("matching_place_name")
+    @JsonProperty("place_name")
     private String matching_place_name;
     @JsonProperty("center")
     private List<Double> center;

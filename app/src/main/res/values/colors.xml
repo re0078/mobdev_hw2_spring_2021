@@ -27,4 +27,9 @@
     <color name="darkColorPrimary">#1e2756</color>
     <color name="darkColorPrimaryDark">#141831</color>
     <color name="darkColorAccent">#2aac4b</color>
+    
+    <attr name="searchSuggestionColor" format="reference"/>
+    <color name="searchSuggestionColorNight">#3DFFFFFF</color>
+    <color name="searchSuggestionColorDay">#3D000000</color>
+
 </resources>

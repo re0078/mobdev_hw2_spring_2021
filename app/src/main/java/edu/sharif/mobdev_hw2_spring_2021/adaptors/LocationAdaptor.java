@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +51,15 @@ public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
         LocationDTO item = locations.get(position);
 
         holder.location_name.setText(item.matching_text);
-        holder.longitude.setText(item.longitude);
-        holder.latitude.setText(item.latitude);
+        holder.longitude.setText(round(item.longitude));
+        holder.latitude.setText(round(item.latitude));
+    }
+
+    private String round(String str) {
+        double x = Double.parseDouble(str);
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(x);
     }
 
     @Override

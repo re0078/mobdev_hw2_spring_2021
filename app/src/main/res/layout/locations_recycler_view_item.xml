@@ -4,17 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:layout_marginBottom="1dp"
     android:layout_marginHorizontal="5dp"
-    android:background="@color/white">
+    android:layout_marginBottom="1dp"
+    android:background="?attr/searchSuggestionColor">
 
     <TextView
         android:id="@+id/location_name"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="40dp"
         android:layout_marginLeft="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="110dp"
         android:text="Birjand"
-        android:textColor="@color/black"
+        android:textColor="?android:colorPrimary"
         android:textSize="16dp"
         app:layout_constraintEnd_toStartOf="@+id/location_lat"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,25 +26,25 @@
         android:id="@+id/location_lat"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="13dp"
+        android:layout_marginRight="0dp"
         android:text="32.872280"
-        android:textColor="@color/gray"
+        android:textColor="?android:colorSecondary"
         android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/location_long"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="40dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginRight="0dp"
         android:text="59.216299"
-        android:textColor="@color/gray"
+        android:textColor="?android:colorSecondary"
         android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/location_lat"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

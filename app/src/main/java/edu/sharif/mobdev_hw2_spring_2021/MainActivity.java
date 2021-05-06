@@ -13,6 +13,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -49,11 +50,6 @@ import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
 import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.Style;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String SOURCE_ID = "SOURCE_ID";
@@ -63,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private MapboxMap mapboxMap;
     private MapView mapView;
     private static boolean flag_id;
+    private static boolean darkModeEnabled = false;
     private SimpleSearchView simpleSearchView;
     private RecyclerView locationsRecyclerView;
     private LocationAdaptor locationAdaptor;
@@ -71,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Feature> mapFeatures;
     private BookmarkAdapter bookmarkAdapter;
     private ModelConverter modelConverter;
+    private LocationComponent deviceLocationComponent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +87,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateStyle(MapboxMap mapboxMap) {
-        mapboxMap.setStyle(new Style.Builder().fromUri(getResources().getString(R.string.style_uri))
+        int styleURI;
+        if (darkModeEnabled) styleURI = R.string.dark_style_uri;
+        else styleURI = R.string.light_style_uri;
+        mapboxMap.setStyle(new Style.Builder().fromUri(getResources().getString(styleURI))
                 .withImage(ICON_ID, BitmapFactory.decodeResource(
                         getResources(), R.drawable.mapbox_marker_icon_default))
                 .withSource(new GeoJsonSource(SOURCE_ID,
@@ -123,6 +124,20 @@ public class MainActivity extends AppCompatActivity {
         }
         mapboxMap.setCameraPosition(position);
         updateStyle(mapboxMap);
+//        LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(this)
+////                .layerBelow(layerId)
+////                .foregroundDrawable(R.drawable.drawable_name)
+//                .bearingTintColor(Color.BLUE)
+//                .accuracyAlpha(1)
+//                .build();
+//
+//        LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions
+//                .builder(this, Objects.requireNonNull(mapboxMap.getStyle()))
+//                .locationComponentOptions(locationComponentOptions)
+//                .build();
+//
+//        deviceLocationComponent = mapboxMap.getLocationComponent();
+//        deviceLocationComponent.activateLocationComponent(locationComponentActivationOptions);
     }
 
     private void setupMapView(Bundle savedInstanceState) {
@@ -151,11 +166,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(@NotNull String query) {
                 Log.d("SimpleSearchView", "Submit:" + query);
-                if (!query.isEmpty()) {
-                    List<LocationDTO> locationDTOS = locationService.getSuggestions(query);
-                    locationAdaptor.setLocations(locationDTOS);
-                    locationAdaptor.notifyDataSetChanged();
-                }
+                if (!query.isEmpty())
+                    selectLocation(locationAdaptor.getLocations().get(0));
+
                 return false;
             }
 
@@ -203,6 +216,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         simpleSearchView.post(() -> simpleSearchView.showSearch());
+    }
+
+    private void selectLocation(LocationDTO locationDTO) {
+        selectLocation(locationDTO.matching_place_name,
+                Double.parseDouble(locationDTO.latitude),
+                Double.parseDouble(locationDTO.longitude));
     }
 
     private void setupSuggestionView() {
@@ -256,23 +275,15 @@ public class MainActivity extends AppCompatActivity {
     public void selectLocation(String matchingName, double latitude, double longitude) {
         locationsRecyclerView.setVisibility(View.INVISIBLE);
         simpleSearchView.closeSearch();
-/*
-        CameraPosition position = new CameraPosition.Builder()
-                .target(new LatLng(latitude, longitude))
-                .zoom(10)
-                .tilt(30)
-                .build();
-                        mapboxMap.setCameraPosition(position);
-*/
         setMapPoints(Point.fromLngLat(longitude, latitude));
     }
 
-    public void ToggleTheme(boolean isChecked){
+    public void ToggleTheme(boolean isChecked) {
         flag_id = true;
+        darkModeEnabled = isChecked;
         if (isChecked) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }
-        else{
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
         recreate();
