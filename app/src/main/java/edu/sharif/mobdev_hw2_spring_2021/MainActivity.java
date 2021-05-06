@@ -1,9 +1,24 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,15 +34,6 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,8 +42,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
 
+import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
+import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
 import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 import edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkAdapter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
 
@@ -45,20 +54,12 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
-import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
-import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
-import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.Style;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String SOURCE_ID = "SOURCE_ID";
     private static final String ICON_ID = "ICON_ID";
     private static final String LAYER_ID = "LAYER_ID";
+    private static final int STORAGE_PERMISSION_CODE = 101;
 
     private MapboxMap mapboxMap;
     private MapView mapView;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         modelConverter = ModelConverter.getInstance();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
+        checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, STORAGE_PERMISSION_CODE);
         setContentView(R.layout.activity_main);
         setupMapView(savedInstanceState);
         setupSearchView();
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 ), style -> {
         });
     }
+
 
     public void setMapPoints(Point... points) {
         mapFeatures.clear();
@@ -267,15 +270,46 @@ public class MainActivity extends AppCompatActivity {
         setMapPoints(Point.fromLngLat(longitude, latitude));
     }
 
-    public void ToggleTheme(boolean isChecked){
+    public void ToggleTheme(boolean isChecked) {
         flag_id = true;
         if (isChecked) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }
-        else{
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
         recreate();
+    }
+
+    public void checkPermission(String permission, int requestCode) {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+
+            // Requesting the permission
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+        } else {
+            Toast.makeText(MainActivity.this, "Permission already granted", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // This function is called when the user accepts or decline the permission.
+    // Request Code is used to check which permission called this function.
+    // This request code is provided when the user is prompt for permission.
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,
+                permissions,
+                grantResults);
+
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(MainActivity.this, "Storage Permission Granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
