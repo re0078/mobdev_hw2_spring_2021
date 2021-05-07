@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.adaptors;
+package edu.sharif.mobdev_hw2_spring_2021.ui;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -21,14 +21,14 @@ import edu.sharif.mobdev_hw2_spring_2021.ui.view_holders.LocationViewHolder;
 import lombok.Getter;
 import lombok.Setter;
 
-public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
+public class LocationAdapter extends RecyclerView.Adapter<LocationViewHolder> {
 
     private final MainActivity activity;
     @Getter
     @Setter
     private List<LocationDTO> locations;
 
-    public LocationAdaptor(Activity activity) {
+    public LocationAdapter(Activity activity) {
         this.locations = new ArrayList<>();
         this.activity = (MainActivity) activity;
     }
@@ -40,7 +40,6 @@ public class LocationAdaptor extends RecyclerView.Adapter<LocationViewHolder> {
                 inflate(R.layout.locations_recycler_view_item, parent, false);
         view.setOnClickListener(v ->
                 activity.selectLocation(
-                        ((TextView) v.findViewById(R.id.location_name)).getText().toString(),
                         Double.parseDouble(((TextView) v.findViewById(R.id.location_lat)).getText().toString()),
                         Double.parseDouble(((TextView) v.findViewById(R.id.location_long)).getText().toString())));
         return new LocationViewHolder(view);

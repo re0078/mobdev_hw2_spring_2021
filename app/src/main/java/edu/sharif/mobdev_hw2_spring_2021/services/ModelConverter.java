@@ -1,8 +1,8 @@
-package edu.sharif.mobdev_hw2_spring_2021.service;
+package edu.sharif.mobdev_hw2_spring_2021.services;
 
 
 import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
-import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.models.BookmarkDTO;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

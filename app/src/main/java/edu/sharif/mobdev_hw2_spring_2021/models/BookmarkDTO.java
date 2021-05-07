@@ -1,4 +1,4 @@
-package edu.sharif.mobdev_hw2_spring_2021.model.coin;
+package edu.sharif.mobdev_hw2_spring_2021.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

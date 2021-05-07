@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.sharif.mobdev_hw2_spring_2021.R;
-import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.models.BookmarkDTO;
 
 public class BookmarkFragment extends Fragment {
 

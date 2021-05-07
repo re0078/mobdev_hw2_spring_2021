@@ -1,15 +1,16 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
@@ -50,12 +51,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
+import java.util.concurrent.CompletableFuture;
 
-import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
 import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
-import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.services.ModelConverter;
 import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
+import edu.sharif.mobdev_hw2_spring_2021.services.ThreadPoolService;
+import edu.sharif.mobdev_hw2_spring_2021.ui.LocationAdapter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkAdapter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
 
@@ -63,9 +66,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
-import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
-import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
-import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 import lombok.Setter;
 
 public class MainActivity extends AppCompatActivity implements PermissionsListener {
@@ -76,19 +76,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final int STORAGE_PERMISSION_CODE = 101;
     private static final int INTERNET_PERMISSION_CODE = 100;
 
+    private MainActivity activity;
     private MapboxMap mapboxMap;
     private MapView mapView;
     private static boolean flag_id;
     private static boolean darkModeEnabled = false;
     private SimpleSearchView simpleSearchView;
     private RecyclerView locationsRecyclerView;
-    private LocationAdaptor locationAdaptor;
+    private LocationAdapter locationAdapter;
     private LocationSuggestionService locationService;
     private BookmarkRepository bookmarkRepository;
     private List<Feature> mapFeatures;
     private BookmarkAdapter bookmarkAdapter;
     private ModelConverter modelConverter;
     private LocationComponent locationComponent;
+    private ThreadPoolService threadPoolService;
     @Setter
     public boolean onTrackingMode = true;
     private PermissionsManager permissionsManager;
@@ -96,11 +98,17 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = this;
         bookmarkRepository = BookmarkRepository.getInstance(getBaseContext());
         mapFeatures = new ArrayList<>();
         bookmarkAdapter = BookmarkAdapter.getInstance();
         modelConverter = ModelConverter.getInstance();
+        threadPoolService = ThreadPoolService.getInstance();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
+
+        if (!darkModeEnabled)
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
 
         checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, STORAGE_PERMISSION_CODE);
         checkPermission(Manifest.permission.INTERNET, INTERNET_PERMISSION_CODE);
@@ -112,11 +120,184 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         setupNavigationBar();
     }
 
+    /**
+     * Setup Beans Methods
+     */
+
     private void setupUserLocationButton() {
         ((FloatingActionButton) findViewById(R.id.user_location_button)).setOnClickListener(listener -> {
             onTrackingMode = true;
             updateStyle(mapboxMap);
         });
+    }
+
+    public void setMapPoints(Point... points) {
+        mapFeatures.clear();
+        OptionalDouble averageLng = Arrays.stream(points).mapToDouble(Point::longitude).average();
+        OptionalDouble averageLat = Arrays.stream(points).mapToDouble(Point::latitude).average();
+        for (Point point : points) {
+            mapFeatures.add(Feature.fromGeometry(Point.fromLngLat(point.longitude(), point.latitude())));
+        }
+        CameraPosition position;
+        if (!averageLat.isPresent() || !averageLng.isPresent())
+            position = CameraPosition.DEFAULT;
+        else {
+            position = new CameraPosition.Builder()
+                    .target(new LatLng(averageLat.getAsDouble(), averageLng.getAsDouble()))
+                    .zoom(10)
+                    .tilt(30)
+                    .build();
+        }
+        mapboxMap.setCameraPosition(position);
+        updateStyle(mapboxMap);
+    }
+
+    private void setupMapView(Bundle savedInstanceState) {
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(mapboxMap -> {
+            MainActivity.this.mapboxMap = mapboxMap;
+            mapboxMap.addOnMapLongClickListener(point -> {
+                setMapPoints(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
+                SaveBookmarkDialog saveBookmarkDialog = new SaveBookmarkDialog();
+                saveBookmarkDialog.setBookmarkPoint(point);
+                saveBookmarkDialog.show(getSupportFragmentManager(), "BookmarkDialog");
+                return true;
+            });
+            setMapPoints();
+        });
+    }
+
+    private void setupSearchView() {
+        simpleSearchView = findViewById(R.id.searchView);
+
+        simpleSearchView.setOnQueryTextListener(new SimpleSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(@NotNull String query) {
+                Log.d("SimpleSearchView", "Submit:" + query);
+                CompletableFuture<Boolean> completableFutureLock = new CompletableFuture<>();
+                updateLocationSuggestion(query, completableFutureLock);
+                if (!query.isEmpty()) {
+                    if (completableFutureLock.join())
+                        if (locationAdapter.getLocations().isEmpty())
+                            Toast.makeText(activity, R.string.no_search_result, Toast.LENGTH_SHORT).show();
+                        else {
+                            selectLocation(locationAdapter.getLocations().get(0));
+                        }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(@NotNull String newText) {
+                Log.d("SimpleSearchView", "Text changed:" + newText);
+                if (!newText.isEmpty()) {
+                    CompletableFuture<Boolean> completableFutureLock = new CompletableFuture<>();
+                    updateLocationSuggestion(newText, completableFutureLock);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextCleared() {
+                Log.d("SimpleSearchView", "Text cleared");
+                return false;
+            }
+        });
+
+        simpleSearchView.setOnSearchViewListener(new SimpleSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                Log.d("SimpleSearchView", "onSearchViewShown");
+                locationsRecyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                Log.d("SimpleSearchView", "onSearchViewClosed");
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onSearchViewShownAnimation() {
+                Log.d("SimpleSearchView", "onSearchViewShownAnimation");
+                locationsRecyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSearchViewClosedAnimation() {
+                Log.d("SimpleSearchView", "onSearchViewClosedAnimation");
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
+            }
+
+
+        });
+        simpleSearchView.post(() -> simpleSearchView.showSearch());
+    }
+
+    private void setupSuggestionView() {
+        locationsRecyclerView = findViewById(R.id.location_list);
+        locationsRecyclerView.setVisibility(View.INVISIBLE);
+        locationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        locationAdapter = new LocationAdapter(this);
+        locationsRecyclerView.setAdapter(locationAdapter);
+        locationService = LocationSuggestionService.getInstance(getResources());
+    }
+
+    private void setupNavigationBar() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.navigation_bookmark, R.id.navigation_map, R.id.navigation_setting)
+                .build();
+
+        View searchButtonView = findViewById(R.id.action_search);
+
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            if (destination.getId() == R.id.navigation_map) {
+                mapView.setVisibility(View.VISIBLE);
+                searchButtonView.setAlpha(1f);
+            } else {
+                searchButtonView.setAlpha(0.2f);
+                mapView.setVisibility(View.INVISIBLE);
+                locationsRecyclerView.setVisibility(View.INVISIBLE);
+                simpleSearchView.post(() -> simpleSearchView.closeSearch());
+                if (destination.getId() == R.id.navigation_bookmark) {
+                    bookmarkAdapter.getBookmarks().clear();
+                    bookmarkRepository.getBookmarks().forEach(bookmark ->
+                            bookmarkAdapter.getBookmarks().add(modelConverter.getBookmarkDTO(bookmark)));
+                }
+            }
+        });
+
+        searchButtonView.setOnClickListener(l -> {
+            if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
+                simpleSearchView.post(() -> simpleSearchView.showSearch());
+        });
+
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(navView, navController);
+        navView.setSelectedItemId(R.id.navigation_map);
+        if (flag_id) {
+            navView.setSelectedItemId(R.id.navigation_setting);
+        }
+    }
+
+    private void updateLocationSuggestion(String query, CompletableFuture<Boolean> lock) {
+        final List<LocationDTO>[] locationDTOS = new List[]{new ArrayList<>()};
+        threadPoolService.execute(() -> {
+            locationDTOS[0] = locationService.getSuggestions(query);
+            lock.complete(true);
+        });
+        runOnUiThread(() -> {
+            if (lock.join()) {
+                locationAdapter.setLocations(locationDTOS[0]);
+                locationAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(this, R.string.error_searching_location, Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     @SuppressWarnings({"MissingPermission"})
@@ -164,165 +345,21 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
 
                 locationComponent.setLocationComponentEnabled(true);
+                onTrackingMode = false;
+                locationComponent.setCameraMode(CameraMode.NONE);
             } else {
                 permissionsManager = new PermissionsManager(this);
                 permissionsManager.requestLocationPermissions(this);
             }
-            onTrackingMode = false;
-            locationComponent.setCameraMode(CameraMode.NONE);
+
         });
-    }
-
-    public void setMapPoints(Point... points) {
-        mapFeatures.clear();
-        OptionalDouble averageLng = Arrays.stream(points).mapToDouble(Point::longitude).average();
-        OptionalDouble averageLat = Arrays.stream(points).mapToDouble(Point::latitude).average();
-        for (Point point : points) {
-            mapFeatures.add(Feature.fromGeometry(Point.fromLngLat(point.longitude(), point.latitude())));
-        }
-        CameraPosition position;
-        if (!averageLat.isPresent() || !averageLng.isPresent())
-            position = CameraPosition.DEFAULT;
-        else {
-            position = new CameraPosition.Builder()
-                    .target(new LatLng(averageLat.getAsDouble(), averageLng.getAsDouble()))
-                    .zoom(10)
-                    .tilt(30)
-                    .build();
-        }
-        mapboxMap.setCameraPosition(position);
-        updateStyle(mapboxMap);
-    }
-
-    private void setupMapView(Bundle savedInstanceState) {
-        mapView = findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(mapboxMap -> {
-            MainActivity.this.mapboxMap = mapboxMap;
-            mapboxMap.addOnMapLongClickListener(point -> {
-                setMapPoints(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
-                SaveBookmarkDialog saveBookmarkDialog = new SaveBookmarkDialog();
-                saveBookmarkDialog.setBookmarkPoint(point);
-                saveBookmarkDialog.show(getSupportFragmentManager(), "BookmarkDialog");
-                return true;
-            });
-            setMapPoints();
-        });
-    }
-
-    private void setupSearchView() {
-        simpleSearchView = findViewById(R.id.searchView);
-        simpleSearchView.setOnQueryTextListener(new SimpleSearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(@NotNull String query) {
-                Log.d("SimpleSearchView", "Submit:" + query);
-                if (!query.isEmpty() && !locationAdaptor.getLocations().isEmpty())
-                    selectLocation(locationAdaptor.getLocations().get(0));
-
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(@NotNull String newText) {
-                Log.d("SimpleSearchView", "Text changed:" + newText);
-                if (!newText.isEmpty()) {
-                    List<LocationDTO> locationDTOS = locationService.getSuggestions(newText);
-                    locationAdaptor.setLocations(locationDTOS);
-                    locationAdaptor.notifyDataSetChanged();
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextCleared() {
-                Log.d("SimpleSearchView", "Text cleared");
-                return false;
-            }
-        });
-
-        simpleSearchView.setOnSearchViewListener(new SimpleSearchView.SearchViewListener() {
-            @Override
-            public void onSearchViewShown() {
-                Log.d("SimpleSearchView", "onSearchViewShown");
-                locationsRecyclerView.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onSearchViewClosed() {
-                Log.d("SimpleSearchView", "onSearchViewClosed");
-                locationsRecyclerView.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onSearchViewShownAnimation() {
-                Log.d("SimpleSearchView", "onSearchViewShownAnimation");
-                locationsRecyclerView.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onSearchViewClosedAnimation() {
-                Log.d("SimpleSearchView", "onSearchViewClosedAnimation");
-                locationsRecyclerView.setVisibility(View.INVISIBLE);
-            }
-        });
-        simpleSearchView.post(() -> simpleSearchView.showSearch());
     }
 
     private void selectLocation(LocationDTO locationDTO) {
-        selectLocation(locationDTO.matching_place_name,
-                Double.parseDouble(locationDTO.latitude),
-                Double.parseDouble(locationDTO.longitude));
+        selectLocation(Double.parseDouble(locationDTO.latitude), Double.parseDouble(locationDTO.longitude));
     }
 
-    private void setupSuggestionView() {
-        locationsRecyclerView = findViewById(R.id.location_list);
-        locationsRecyclerView.setVisibility(View.INVISIBLE);
-        locationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        locationAdaptor = new LocationAdaptor(this);
-        locationsRecyclerView.setAdapter(locationAdaptor);
-        locationService = LocationSuggestionService.getInstance(getResources());
-    }
-
-    private void setupNavigationBar() {
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_bookmark, R.id.navigation_map, R.id.navigation_setting)
-                .build();
-
-        View searchButtonView = findViewById(R.id.action_search);
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            if (destination.getId() == R.id.navigation_map) {
-                mapView.setVisibility(View.VISIBLE);
-                searchButtonView.setAlpha(1f);
-            } else {
-                searchButtonView.setAlpha(0.2f);
-                mapView.setVisibility(View.INVISIBLE);
-                locationsRecyclerView.setVisibility(View.INVISIBLE);
-                simpleSearchView.post(() -> simpleSearchView.closeSearch());
-                if (destination.getId() == R.id.navigation_bookmark) {
-                    bookmarkAdapter.getBookmarks().clear();
-                    bookmarkRepository.getBookmarks().forEach(bookmark ->
-                            bookmarkAdapter.getBookmarks().add(modelConverter.getBookmarkDTO(bookmark)));
-                }
-            }
-        });
-
-        searchButtonView.setOnClickListener(l -> {
-            if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.navigation_map)
-                simpleSearchView.post(() -> simpleSearchView.showSearch());
-        });
-
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(navView, navController);
-        navView.setSelectedItemId(R.id.navigation_map);
-        if (flag_id) {
-            navView.setSelectedItemId(R.id.navigation_setting);
-        }
-    }
-
-    public void selectLocation(String matchingName, double latitude, double longitude) {
+    public void selectLocation(double latitude, double longitude) {
         onTrackingMode = false;
         locationsRecyclerView.setVisibility(View.INVISIBLE);
         simpleSearchView.closeSearch();
@@ -343,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     public void checkPermission(String permission, int requestCode) {
         if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
 
-            // Requesting the permission
+            /* Requesting the permission */
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
         } else {
             if (requestCode == INTERNET_PERMISSION_CODE)
@@ -353,10 +390,17 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         }
     }
 
-    // This function is called when the user accepts or decline the permission.
-    // Request Code is used to check which permission called this function.
-    // This request code is provided when the user is prompt for permission.
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        simpleSearchView.onActivityResult(requestCode, resultCode, data);
+    }
 
+    /**
+     * This function is called when the user accepts or decline the permission.
+     * Request Code is used to check which permission called this function.
+     * This request code is provided when the user is prompt for permission.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

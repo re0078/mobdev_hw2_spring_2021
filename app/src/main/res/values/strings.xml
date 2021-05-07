@@ -20,11 +20,13 @@
     <string name="not_long">Long</string>
     <string name="search_bookmarks_hint">Search bookmarks</string>
     <string name="bookmark_name_hint">Bookmark name</string>
-    <string name="light_style_uri">mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41</string>
-    <string name="dark_style_uri">mapbox://styles/mapbox/dark-v10</string>
+    <string name="light_style_uri">mapbox://styles/mapbox/navigation-day-v1</string>
+    <string name="dark_style_uri">mapbox://styles/mapbox/navigation-night-v1</string>
     <string name="dialog_message">Are you sure you want to delete saved data?</string>
     <string name="dialog_title">Delete Alert</string>
     <string name="delete_data_button_text">Delete Data</string>
     <string name="dark_mode_switch">Dark Mode</string>
     <string name="user_device_location_permission_explanation">App does not have permission to access device location.</string>
+    <string name="no_search_result">No result found!</string>
+    <string name="error_searching_location">An error occured while searching the location</string>
 </resources>

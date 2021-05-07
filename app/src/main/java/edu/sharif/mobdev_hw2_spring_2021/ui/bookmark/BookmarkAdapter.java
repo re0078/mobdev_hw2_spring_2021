@@ -1,15 +1,12 @@
 package edu.sharif.mobdev_hw2_spring_2021.ui.bookmark;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -21,8 +18,8 @@ import java.util.List;
 import edu.sharif.mobdev_hw2_spring_2021.MainActivity;
 import edu.sharif.mobdev_hw2_spring_2021.R;
 import edu.sharif.mobdev_hw2_spring_2021.db.entity.Bookmark;
-import edu.sharif.mobdev_hw2_spring_2021.model.coin.BookmarkDTO;
-import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.models.BookmarkDTO;
+import edu.sharif.mobdev_hw2_spring_2021.services.ModelConverter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.DeleteBookmarkDialog;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -29,8 +29,10 @@
     <color name="darkColorAccent">#2aac4b</color>
     
     <attr name="searchSuggestionColor" format="reference"/>
-    <color name="searchSuggestionColorNight">#3DFFFFFF</color>
-    <color name="searchSuggestionColorDay">#3D000000</color>
+<!--    <color name="searchSuggestionColorNight">#8FFFFFFF</color>-->
+    <color name="searchSuggestionColorNight">#4F000000</color>
+<!--    <color name="searchSuggestionColorDay">#4F000000</color>-->
+    <color name="searchSuggestionColorDay">#8FFFFFFF</color>
 
     <color name="userDeviceAccuracyColor">#3D018786</color>
     <color name="userDeviceBearingTintColor">@color/blue_5</color>
