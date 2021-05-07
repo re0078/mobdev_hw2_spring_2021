@@ -1,10 +1,25 @@
 package edu.sharif.mobdev_hw2_spring_2021;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -28,15 +43,6 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -45,8 +51,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
 
+import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.db.dao.BookmarkRepository;
+import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
 import edu.sharif.mobdev_hw2_spring_2021.service.ModelConverter;
+import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
 import edu.sharif.mobdev_hw2_spring_2021.ui.bookmark.BookmarkAdapter;
 import edu.sharif.mobdev_hw2_spring_2021.ui.dialog.SaveBookmarkDialog;
 
@@ -64,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     private static final String SOURCE_ID = "SOURCE_ID";
     private static final String ICON_ID = "ICON_ID";
     private static final String LAYER_ID = "LAYER_ID";
+    private static final int STORAGE_PERMISSION_CODE = 101;
+    private static final int INTERNET_PERMISSION_CODE = 100;
 
     private MapboxMap mapboxMap;
     private MapView mapView;
@@ -91,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         modelConverter = ModelConverter.getInstance();
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
+        checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, STORAGE_PERMISSION_CODE);
+        checkPermission(Manifest.permission.INTERNET, INTERNET_PERMISSION_CODE);
         setContentView(R.layout.activity_main);
         setupMapView(savedInstanceState);
         setupUserLocationButton();
@@ -327,42 +340,91 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         recreate();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mapView.onStart();
+    public void checkPermission(String permission, int requestCode) {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+
+            // Requesting the permission
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+        } else {
+            if (requestCode == INTERNET_PERMISSION_CODE)
+                Toast.makeText(MainActivity.this, "Internet Permission already granted", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(MainActivity.this, "Storage Permission already granted", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mapView.onResume();
-    }
+    // This function is called when the user accepts or decline the permission.
+    // Request Code is used to check which permission called this function.
+    // This request code is provided when the user is prompt for permission.
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        mapView.onPause();
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,
+                permissions,
+                grantResults);
+
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(MainActivity.this, "Storage Permission Granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == INTERNET_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage Permission Granted", Toast.LENGTH_SHORT).
+                        show();
+            } else {
+                Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).
+                        show();
+            }
+        }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mapView.onStop();
-    }
+        @Override
+        protected void onStart () {
+            super.onStart();
+            mapView.onStart();
+        }
 
-    @Override
-    protected void onSaveInstanceState(@NotNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
-    }
+        @Override
+        protected void onResume () {
+            super.onResume();
+            mapView.onResume();
+        }
 
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapView.onLowMemory();
-    }
+        @Override
+        protected void onPause () {
+            super.onPause();
+            mapView.onPause();
+        }
 
+        @Override
+        protected void onStop () {
+            super.onStop();
+            mapView.onStop();
+        }
+
+        @Override
+        protected void onSaveInstanceState (@NotNull Bundle outState){
+            super.onSaveInstanceState(outState);
+            mapView.onSaveInstanceState(outState);
+        }
+
+        @Override
+        public void onLowMemory () {
+            super.onLowMemory();
+            mapView.onLowMemory();
+        }
+
+        @Override
+        protected void onDestroy () {
+            super.onDestroy();
+            mapView.onDestroy();
+        }
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
