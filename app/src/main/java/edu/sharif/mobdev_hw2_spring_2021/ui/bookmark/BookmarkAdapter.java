@@ -77,8 +77,9 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkViewHolder> {
         deleteBookmarkDialog.show(fragmentManager, "BookmarkDeletionDialog");
     }
 
-    private void showBookmarkOnMap(Point point){
+    private void showBookmarkOnMap(Point point) {
         ((MainActivity) bookmarkActivity).setMapPoints(point);
+        ((MainActivity) bookmarkActivity).setOnTrackingMode(false);
         BottomNavigationView navView = bookmarkActivity.findViewById(R.id.nav_view);
         navView.setSelectedItemId(R.id.navigation_map);
     }

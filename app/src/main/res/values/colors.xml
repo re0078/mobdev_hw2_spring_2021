@@ -32,4 +32,6 @@
     <color name="searchSuggestionColorNight">#3DFFFFFF</color>
     <color name="searchSuggestionColorDay">#3D000000</color>
 
+    <color name="userDeviceAccuracyColor">#3D018786</color>
+    <color name="userDeviceBearingTintColor">@color/blue_5</color>
 </resources>

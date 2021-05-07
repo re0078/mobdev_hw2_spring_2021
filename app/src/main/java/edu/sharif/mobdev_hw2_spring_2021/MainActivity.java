@@ -4,9 +4,13 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.ferfalk.simplesearchview.SimpleSearchView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
@@ -14,6 +18,10 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
+import com.mapbox.mapboxsdk.location.LocationComponentOptions;
+import com.mapbox.mapboxsdk.location.modes.CameraMode;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -49,8 +57,9 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 import edu.sharif.mobdev_hw2_spring_2021.adaptors.LocationAdaptor;
 import edu.sharif.mobdev_hw2_spring_2021.models.LocationDTO;
 import edu.sharif.mobdev_hw2_spring_2021.services.LocationSuggestionService;
+import lombok.Setter;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PermissionsListener {
 
     private static final String SOURCE_ID = "SOURCE_ID";
     private static final String ICON_ID = "ICON_ID";
@@ -68,7 +77,10 @@ public class MainActivity extends AppCompatActivity {
     private List<Feature> mapFeatures;
     private BookmarkAdapter bookmarkAdapter;
     private ModelConverter modelConverter;
-    private LocationComponent deviceLocationComponent;
+    private LocationComponent locationComponent;
+    @Setter
+    public boolean onTrackingMode = true;
+    private PermissionsManager permissionsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,16 +93,25 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         setupMapView(savedInstanceState);
+        setupUserLocationButton();
         setupSearchView();
         setupSuggestionView();
         setupNavigationBar();
     }
 
+    private void setupUserLocationButton() {
+        ((FloatingActionButton) findViewById(R.id.user_location_button)).setOnClickListener(listener -> {
+            onTrackingMode = true;
+            updateStyle(mapboxMap);
+        });
+    }
+
+    @SuppressWarnings({"MissingPermission"})
     private void updateStyle(MapboxMap mapboxMap) {
         int styleURI;
         if (darkModeEnabled) styleURI = R.string.dark_style_uri;
         else styleURI = R.string.light_style_uri;
-        mapboxMap.setStyle(new Style.Builder().fromUri(getResources().getString(styleURI))
+        Style.Builder styleBuilder = new Style.Builder().fromUri(getResources().getString(styleURI))
                 .withImage(ICON_ID, BitmapFactory.decodeResource(
                         getResources(), R.drawable.mapbox_marker_icon_default))
                 .withSource(new GeoJsonSource(SOURCE_ID,
@@ -101,7 +122,41 @@ public class MainActivity extends AppCompatActivity {
                                 iconAllowOverlap(true),
                                 iconIgnorePlacement(true)
                         )
-                ), style -> {
+                );
+        mapboxMap.setStyle(styleBuilder, style -> {
+            if (PermissionsManager.areLocationPermissionsGranted(this)) {
+                LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(this)
+                        .bearingTintColor(R.color.userDeviceBearingTintColor)
+                        .accuracyAlpha(1)
+                        .accuracyColor(R.color.userDeviceAccuracyColor)
+                        .build();
+
+                LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions
+                        .builder(this, Objects.requireNonNull(style))
+                        .locationComponentOptions(locationComponentOptions)
+                        .build();
+
+                locationComponent = mapboxMap.getLocationComponent();
+                locationComponent.activateLocationComponent(locationComponentActivationOptions);
+
+                locationComponent.setLocationComponentEnabled(true);
+                if (onTrackingMode)
+                    locationComponent.setCameraMode(CameraMode.TRACKING);
+                else
+                    locationComponent.setCameraMode(CameraMode.NONE);
+                locationComponent.setRenderMode(RenderMode.COMPASS);
+
+//                // Add the location icon click listener
+//                locationComponent.addOnLocationClickListener(this); // TODO: clicking on user device pointer to show user speed would be a good ui
+
+
+                locationComponent.setLocationComponentEnabled(true);
+            } else {
+                permissionsManager = new PermissionsManager(this);
+                permissionsManager.requestLocationPermissions(this);
+            }
+            onTrackingMode = false;
+            locationComponent.setCameraMode(CameraMode.NONE);
         });
     }
 
@@ -124,32 +179,14 @@ public class MainActivity extends AppCompatActivity {
         }
         mapboxMap.setCameraPosition(position);
         updateStyle(mapboxMap);
-//        LocationComponentOptions locationComponentOptions = LocationComponentOptions.builder(this)
-////                .layerBelow(layerId)
-////                .foregroundDrawable(R.drawable.drawable_name)
-//                .bearingTintColor(Color.BLUE)
-//                .accuracyAlpha(1)
-//                .build();
-//
-//        LocationComponentActivationOptions locationComponentActivationOptions = LocationComponentActivationOptions
-//                .builder(this, Objects.requireNonNull(mapboxMap.getStyle()))
-//                .locationComponentOptions(locationComponentOptions)
-//                .build();
-//
-//        deviceLocationComponent = mapboxMap.getLocationComponent();
-//        deviceLocationComponent.activateLocationComponent(locationComponentActivationOptions);
     }
 
     private void setupMapView(Bundle savedInstanceState) {
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-        mapViewAsyncAttitude();
-    }
-
-    private void mapViewAsyncAttitude() {
         mapView.getMapAsync(mapboxMap -> {
             MainActivity.this.mapboxMap = mapboxMap;
-            mapboxMap.addOnMapClickListener(point -> {
+            mapboxMap.addOnMapLongClickListener(point -> {
                 setMapPoints(Point.fromLngLat(point.getLongitude(), point.getLatitude()));
                 SaveBookmarkDialog saveBookmarkDialog = new SaveBookmarkDialog();
                 saveBookmarkDialog.setBookmarkPoint(point);
@@ -166,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(@NotNull String query) {
                 Log.d("SimpleSearchView", "Submit:" + query);
-                if (!query.isEmpty())
+                if (!query.isEmpty() && !locationAdaptor.getLocations().isEmpty())
                     selectLocation(locationAdaptor.getLocations().get(0));
 
                 return false;
@@ -273,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void selectLocation(String matchingName, double latitude, double longitude) {
+        onTrackingMode = false;
         locationsRecyclerView.setVisibility(View.INVISIBLE);
         simpleSearchView.closeSearch();
         setMapPoints(Point.fromLngLat(longitude, latitude));
@@ -329,5 +367,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+    }
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        Toast.makeText(this, R.string.user_device_location_permission_explanation, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            updateStyle(mapboxMap);
+        } else {
+            Toast.makeText(this, R.string.user_device_location_permission_explanation, Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 }
